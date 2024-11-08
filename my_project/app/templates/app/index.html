@@ -16,6 +16,7 @@
 
         ws.onmessage = function (event) {
             console.log('Message Recevied from server...')
+            console.log(event.data)
         }
         ws.onerror = function (event) {
             console.log('Error from server...')
