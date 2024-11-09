@@ -12,7 +12,7 @@ class MySyncConsumer(SyncConsumer):
     def websocket_receive(self, event):
         print("Message received:", event['text'])
 
-        for i in range(10):
+        for i in range(20):
             self.send({
                 'type':'websocket.send',
                 'text': json.dumps({"count":i})
@@ -31,10 +31,10 @@ class MyAsyncConsumer(AsyncConsumer):
 
     async def websocket_receive(self, event):
         print("Message received:", event.get('text'))
-        for i in range(10):
+        for i in range(20):
             await self.send({
                 'type':'websocket.send',
-                'text': str(i)
+                'text': json.dumps({"count":i})
             })
             await asyncio.sleep(1)
 
