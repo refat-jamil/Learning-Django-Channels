@@ -9,7 +9,8 @@ class MySyncConsumer(SyncConsumer):
         print("WebSocket connected", event)
 
     def websocket_receive(self, event):
-        print("Message received:", event)
+        print("Message received:", event['text'])
+        
         for i in range(10):
             self.send({
                 'type':'websocket.send',

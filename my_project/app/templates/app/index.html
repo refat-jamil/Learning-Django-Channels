@@ -7,6 +7,7 @@
 </head>
 <body>
     <h1>Count Page</h1>
+    <p id="count"> </p>
     <script>
         var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
         ws.onopen = function (){
@@ -17,6 +18,7 @@
         ws.onmessage = function (event) {
             console.log('Message Recevied from server...')
             console.log(event.data)
+            document.getElementById('count').innerText = event.data
         }
         ws.onerror = function (event) {
             console.log('Error from server...')
