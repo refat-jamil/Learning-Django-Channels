@@ -18,7 +18,8 @@
         ws.onmessage = function (event) {
             console.log('Message Recevied from server...')
             console.log(event.data)
-            document.getElementById('count').innerText = event.data
+            var data = JSON.parse(event.data)
+            document.getElementById('count').innerText = data.count
         }
         ws.onerror = function (event) {
             console.log('Error from server...')
