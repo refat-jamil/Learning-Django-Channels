@@ -8,6 +8,8 @@ class MySyncConsumer(SyncConsumer):
     def websocket_connect(self, event):
         self.send({"type": "websocket.accept"})
         print("WebSocket connected", event)
+        print("Channel Layer...", self.channel_layer) # get default 
+        print("Channel Name...", self.channel_name) # get default 
 
     def websocket_receive(self, event):
         print("Message received:", event['text'])
