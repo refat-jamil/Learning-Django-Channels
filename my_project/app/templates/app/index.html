@@ -7,25 +7,36 @@
 </head>
 <body>
     <h1>Count Page</h1>
-    <p id="count"> </p>
+
+    <textarea  id="chat-log" cols="100" rows="20"> </textarea><br>
+    <input type="text" id="chat-message-input" size="100"><br>
+    <input type="button" value="Send" id="chat-message-submit">
     <script>
         var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
         ws.onopen = function (){
             console.log("Websocket connection open....")
-            ws.send("Hi, My Friends..")
+
         }
 
         ws.onmessage = function (event) {
             console.log('Message Recevied from server...')
-            console.log(event.data)
-            var data = JSON.parse(event.data)
-            document.getElementById('count').innerText = data.count
+            console.log(event)
+            
         }
         ws.onerror = function (event) {
             console.log('Error from server...')
         }
         ws.onclose = function (event) {
             console.log('Websocket connection close....')
+        }
+
+        document.getElementById('chat-message-submit').onclick = function(event){
+            const messageInputDom = document.getElementById('chat-message-input')
+            const message = messageInputDom.value 
+            ws.send(JSON.stringify({
+                'msg':message
+            }))
+            messageInputDom.value = ''
         }
 
     </script>
