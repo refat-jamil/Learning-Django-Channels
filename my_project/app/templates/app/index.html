@@ -21,6 +21,8 @@
         ws.onmessage = function (event) {
             console.log('Message Recevied from server...')
             console.log(event)
+            const data = JSON.parse(event.data)
+            document.querySelector('#chat-log').value += (data.msg + '\n')
             
         }
         ws.onerror = function (event) {
