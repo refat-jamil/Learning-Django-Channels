@@ -8,39 +8,42 @@
 <body>
     <h1>Count Page</h1>
 
-    <textarea  id="chat-log" cols="100" rows="20"> </textarea><br>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
     <input type="text" id="chat-message-input" size="100"><br>
     <input type="button" value="Send" id="chat-message-submit">
+
+    {{ group_name|json_script:"group_name" }}
+
     <script>
-        var ws = new WebSocket('ws://127.0.0.1:8000/ws/sc/')
-        ws.onopen = function (){
-            console.log("Websocket connection open....")
+        const group_name = JSON.parse(document.getElementById('group_name').textContent);
+        var ws = new WebSocket('ws://127.0.0.1:8000/ws/ac/' + group_name + '/');
 
-        }
+        ws.onopen = function() {
+            console.log("WebSocket connection open....");
+        };
 
-        ws.onmessage = function (event) {
-            console.log('Message Recevied from server...')
-            console.log(event)
-            const data = JSON.parse(event.data)
-            document.querySelector('#chat-log').value += (data.msg + '\n')
-            
-        }
-        ws.onerror = function (event) {
-            console.log('Error from server...')
-        }
-        ws.onclose = function (event) {
-            console.log('Websocket connection close....')
-        }
+        ws.onmessage = function(event) {
+            console.log('Message Received from server...');
+            const data = JSON.parse(event.data);  // Ensure server sends JSON
+            document.querySelector('#chat-log').value += (data.msg + '\n');  // Use 'msg'
+        };
 
-        document.getElementById('chat-message-submit').onclick = function(event){
-            const messageInputDom = document.getElementById('chat-message-input')
-            const message = messageInputDom.value 
+        ws.onerror = function(event) {
+            console.log('Error from server...');
+        };
+
+        ws.onclose = function(event) {
+            console.log('WebSocket connection closed....');
+        };
+
+        document.getElementById('chat-message-submit').onclick = function(event) {
+            const messageInputDom = document.getElementById('chat-message-input');
+            const message = messageInputDom.value;
             ws.send(JSON.stringify({
-                'msg':message
-            }))
-            messageInputDom.value = ''
-        }
-
+                'msg': message
+            }));
+            messageInputDom.value = '';
+        };
     </script>
 </body>
 </html>

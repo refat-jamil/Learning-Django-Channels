@@ -1,70 +1,72 @@
 from channels.consumer import SyncConsumer, AsyncConsumer
 from channels.exceptions import StopConsumer
-import json
-import asyncio
 from asgiref.sync import async_to_sync
 
+# Sync Consumer handling WebSocket connections
 class MySyncConsumer(SyncConsumer):
     def websocket_connect(self, event):
-        # Accept the WebSocket connection
         self.send({"type": "websocket.accept"})
-        print("WebSocket connected", event)
+        print("WebSocket connected:", event)
 
-        # Check for channel layer availability
         if self.channel_layer:
-            # Add this channel to the "Programmers" group
-            async_to_sync(self.channel_layer.group_add)("Programmers", self.channel_name)
-            print("Channel Layer connected:", self.channel_layer)
-            print("Channel Name:", self.channel_name)
-        else:
-            print("Channel layer is not configured.")
+            # Join the "Programmers" group
+            self.channel_layer.group_add("Programmers", self.channel_name)
+            print("Connected to channel layer with channel name:", self.channel_name)
 
     def websocket_receive(self, event):
-        print("Message received:", event['text'])
-        # Check for channel layer availability
+        print("Received message:", event['text'])
+        
         if self.channel_layer:
-            # Send the received message to the "Programmers" group
-            async_to_sync(self.channel_layer.group_send)(
+            # Broadcast message to "Programmers" group
+            self.channel_layer.group_send(
                 "Programmers",
-                {
-                    "type": "chat.message",
-                    "message": event["text"]
-                }
+                {"type": "chat.message", "message": event["text"]}
             )
 
     def chat_message(self, event):
-        print(event["message"])
-        # Send the message to WebSocket
+        print("Broadcasting message:", event["message"])
+        # Send message back to WebSocket client
         self.send({
             "type": "websocket.send",
             "text": event["message"]
         })
 
     def websocket_disconnect(self, event):
-        print("WebSocket disconnected", event)
-        # Check for channel layer availability
+        print("WebSocket disconnected:", event)
+        
         if self.channel_layer:
-            # Remove the channel from the "Programmers" group
-            async_to_sync(self.channel_layer.group_discard)("Programmers", self.channel_name)
+            # Leave the "Programmers" group
+            self.channel_layer.group_discard("Programmers", self.channel_name)
+
         raise StopConsumer()
 
 
+# Async Consumer handling WebSocket connections
 class MyAsyncConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        # Accept the WebSocket connection
         await self.send({"type": "websocket.accept"})
-        print("WebSocket connected")
+        self.group_name = self.scope["url_route"]["kwargs"]["group_name"]
+        
+        if self.channel_layer:
+            # Join the group dynamically based on the group name
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
 
     async def websocket_receive(self, event):
-        print("Message received:", event.get("text"))
-        # Send a count from 0 to 19 with a delay
-        for i in range(20):
-            await self.send({
-                "type": "websocket.send",
-                "text": json.dumps({"count": i})
-            })
-            await asyncio.sleep(1)  # Asynchronous sleep
+        if self.channel_layer:
+            # Send the received message to the group
+            await self.channel_layer.group_send(
+                self.group_name,
+                {"type": "chat.message", "message": event.get("text", "")}
+            )
+
+    async def chat_message(self, event):
+        # Send the message to the WebSocket client
+        await self.send({
+            "type": "websocket.send",
+            "text": event["message"],
+        })
 
     async def websocket_disconnect(self, event):
-        print("WebSocket disconnected")
-        raise StopConsumer()
+        if self.channel_layer:
+            # Remove the client from the group
+            await self.channel_layer.group_discard(self.group_name, self.channel_name)
