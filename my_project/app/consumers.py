@@ -70,3 +70,4 @@ class MyAsyncConsumer(AsyncConsumer):
         if self.channel_layer:
             # Remove the client from the group
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
+ 
